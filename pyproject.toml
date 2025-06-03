@@ -1,0 +1,8 @@
+[project]
+name = "inecosysllm"
+version = "0.1.0"
+description = "LMbacked service to help boost Inecosys marketing in early stages of the company"
+requires-python = ">=3.13"
+dependencies = [
+    "flask>=3.1.1",
+]

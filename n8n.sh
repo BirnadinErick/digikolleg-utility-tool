@@ -1,0 +1,1 @@
+docker run -it --rm --env N8N_PROXY_HOPS=1  --env EXPRESS_TRUST_PROXY=true --env N8N_RUNNERS_ENABLED=true --env N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n

@@ -1,5 +1,6 @@
 import datetime
 
+import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, request, jsonify
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -13,8 +14,18 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 model.to(device)
 
+APP_SERVICE = "http://localhost:5000"
+
 def notify_personal(task_id):
-    return None
+    try:
+        res = requests.post(f"{APP_SERVICE}/webhook/update-post-status", json={"task_id": task_id})
+        if res.status_code != 200:
+            print(f"Failed to update new post: RES/{res.status_code}")
+            return False
+    except Exception as e:
+        print(f"Failed to notify APP new post: EXP/{e}")
+        return False
+    return True
 
 def make_prompt(event_title, date, description, good, bad, goal, instructions):
     return f"""
@@ -92,14 +103,16 @@ def retrieve_task_data(task_id):
     record.status = "processing"
     session.commit()
 
-    return record
+    return record.dict()
 
 @llm.route("/process-new-task", methods=["POST"])
 def generate():
-    task_id = request.json['task_id']
+    print(f"Generating Post: {request.json}")
+    req_json = request.json
+    task_id = req_json["task_id"]
     data = retrieve_task_data(task_id)
 
-    result = scheduler.add_job(func=generate_linkedin_post, args=[task_id,data], id=task_id, replace_existing=True)
+    result = scheduler.add_job(func=generate_linkedin_post, args=[task_id,data], id=str(task_id), replace_existing=True)
     if result.id != task_id:
         return jsonify({"ok": False})
 

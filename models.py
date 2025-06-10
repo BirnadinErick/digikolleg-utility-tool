@@ -18,3 +18,23 @@ class PostRecord(Base):
     post = Column(Text)
     instructions = Column(Text)
     status = Column(String(50), default="queued")  # queued / processing / done / failed
+
+    def dict(self):
+        return {
+            "event_title": self.event_title,
+            "date": self.date,
+            "description": self.description,
+            "good": self.good,
+            "bad": self.bad,
+            "goal": self.goal,
+            "instructions": self.instructions,
+        }
+
+    def get_post(self):
+        return {
+            'post': self.post,
+            'event_title': self.event_title,
+        }
+
+if __name__=="__main__":
+    Base.metadata.create_all(engine)

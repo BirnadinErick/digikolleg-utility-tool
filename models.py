@@ -1,8 +1,11 @@
 from sqlalchemy import create_engine, Column, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from dotenv import dotenv_values
 
-engine = create_engine("sqlite:///posts.db")
+config = dotenv_values(".env")
+
+engine = create_engine(config['DATABASE_URI'])
 Base = declarative_base()
 SessionLocal = sessionmaker(bind=engine)
 

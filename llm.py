@@ -1,5 +1,7 @@
 import datetime
+from time import sleep
 
+from dotenv import dotenv_values
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, request, jsonify
@@ -8,17 +10,27 @@ import torch
 
 from models import SessionLocal, PostRecord
 
-device = "cpu"
-model_name = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
-model.to(device)
+config = dotenv_values(".env")
 
-APP_SERVICE = "http://localhost:5000"
+device = config['INFERENCE_DEVICE']
+model_name = config['MODEL_NAME']
+
+#bootstrap model
+if config['ENABLE_LLM_GENERATION']=='True':
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name)
+    model.to(device)
+else:
+    print('LLM Disabled')
 
 def notify_personal(task_id):
+    if config['ENABLE_EMAIL']=='False':
+        print("Email not enabled")
+        print(f"Notification for task_id: {task_id}")
+        return True
+
     try:
-        res = requests.post(f"{APP_SERVICE}/webhook/update-post-status", json={"task_id": task_id})
+        res = requests.post(f"{config['APP_SERVICE']}/webhook/update-post-status", json={"task_id": task_id})
         if res.status_code != 200:
             print(f"Failed to update new post: RES/{res.status_code}")
             return False
@@ -26,6 +38,7 @@ def notify_personal(task_id):
         print(f"Failed to notify APP new post: EXP/{e}")
         return False
     return True
+
 
 def make_prompt(event_title, date, description, good, bad, goal, instructions):
     return f"""
@@ -50,11 +63,19 @@ Instructions: {instructions}
 Post:
 """
 
+
 def generate_linkedin_post(task_id, inputs):
     prompt = make_prompt(**inputs)
-    print(f"prompt: {prompt}")
-    input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(device)
 
+    if config['ENABLE_LLM_GENERATION'] == 'False':
+        print("LLM generation disabled, sleeping for 5s...")
+        sleep(10)
+        notify_personal(9) # 9 is for demos
+        print("Post saved for task_id: ", task_id)
+        print(f"prompt: {prompt}")
+        return
+
+    input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(device)
     with torch.no_grad():
         output_ids = model.generate(
             input_ids,
@@ -93,6 +114,7 @@ llm = Flask(__name__)
 scheduler = BackgroundScheduler()
 scheduler.start()
 
+
 def retrieve_task_data(task_id):
     session = SessionLocal()
     record = session.query(PostRecord).filter_by(id=task_id).first()
@@ -105,6 +127,7 @@ def retrieve_task_data(task_id):
 
     return record.dict()
 
+
 @llm.route("/process-new-task", methods=["POST"])
 def generate():
     print(f"Generating Post: {request.json}")
@@ -112,11 +135,18 @@ def generate():
     task_id = req_json["task_id"]
     data = retrieve_task_data(task_id)
 
-    result = scheduler.add_job(func=generate_linkedin_post, args=[task_id,data], id=str(task_id), replace_existing=True)
+    if config['ENABLE_SCHEDULED_GENERATION'] == 'False':
+        print("Scheduled generation not enabled")
+        print(f"Recvd {task_id} data: {data}")
+        return jsonify({"ok": True})
+
+    result = scheduler.add_job(func=generate_linkedin_post, args=[task_id, data], id=str(task_id),
+                               replace_existing=True)
     if result.id != task_id:
         return jsonify({"ok": False})
 
     return jsonify({"ok": True})
+
 
 if __name__ == '__main__':
     llm.run(port=5001)

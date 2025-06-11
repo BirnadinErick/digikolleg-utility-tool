@@ -1,6 +1,6 @@
 [project]
 name = "inecosysllm"
-version = "0.3.9"
+version = "0.4.19"
 description = "LMbacked service to help boost Inecosys marketing in early stages of the company"
 requires-python = ">=3.13"
 dependencies = [

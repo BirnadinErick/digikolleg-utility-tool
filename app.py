@@ -139,10 +139,14 @@ def request_new_post_init():
 
     ok = request_new_post(int(task_id))
     if not ok:
-        return 'Something went wrong'
+        return render_template('request-notification.html', title="Oopsie!", msg="Something went wrong. We will look into it.")
 
     print(f"Requested new post: {task_id}")
-    return 'Requested. Once approved the post will be queued to Generation-Service'
+    return render_template('request-notification.html', msg="Your request has been notified to Marketing team.", title="Danke!")
+
+@app.route('/mockup')
+def mockup():
+    return render_template('request-notification.html')
 
 @app.route("/init-approve/<int:task_id>")
 def init_approve(task_id):

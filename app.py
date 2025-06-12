@@ -232,6 +232,13 @@ def update_post_status():
                    )
     return jsonify({"status": "success"}) if ok else jsonify({"status": "failed"})
 
+@app.route('/posts', methods=['GET'])
+def get_posts():
+    session = SessionLocal()
+    posts = session.query(PostRecord).all()
+
+    return render_template('posts.html', posts=posts)
+
 if __name__ == '__main__':
     DEBUG = config['ENABLE_DEBUG'] == 'True'
     app.run(debug=DEBUG)

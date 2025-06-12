@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de-DE">
+<head>
+    <title>Saved LinkedIn Posts</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #999;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #eee;
+        }
+    </style>
+</head>
+<body>
+<h1>All LinkedIn Posts</h1>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Event Title</th>
+        <th>Date</th>
+        <th>Description</th>
+        <th>Good</th>
+        <th>Bad</th>
+        <th>Goal</th>
+        <th>Post</th>
+        <th>Instructions</th>
+        <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for post in posts %}
+        <tr>
+            <td>{{ post.id }}</td>
+            <td>{{ post.event_title }}</td>
+            <td>{{ post.date }}</td>
+            <td>{{ post.description }}</td>
+            <td>{{ post.good }}</td>
+            <td>{{ post.bad }}</td>
+            <td>{{ post.goal }}</td>
+            <td>{{ post.post }}</td>
+            <td>{{ post.instructions }}</td>
+            <td>{{ post.status }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

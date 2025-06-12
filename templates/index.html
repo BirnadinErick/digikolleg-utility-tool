@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}
+    Bootstrap your social media presence
+{% endblock %}
+
+{% block page_title %} Bootstrap your Social Media Presence {% endblock %}
+
+{% block hero %}
+    <div
+            class="hero min-h-screen"
+            style="background-image: url(https://unsplash.com/photos/fKPZGJI4dXU/download?ixid=M3wxMjA3fDB8MXxhbGx8fHx8fHx8fHwxNzQ5NzQxMzExfA&force=true&w=1920);"
+    >
+        <div class="hero-overlay"></div>
+        <div class="hero-content text-neutral-content text-center">
+            <div class="max-w-md">
+                <h1 class="mb-5 text-5xl font-bold">Servus!</h1>
+                <p class="mb-5">
+                    Let's bootstrap your Social Media Presence!
+                </p>
+                <a href="/new-post" class="btn btn-primary">Request New Post</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

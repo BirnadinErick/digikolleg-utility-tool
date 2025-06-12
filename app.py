@@ -91,6 +91,10 @@ def request_new_post(task_id):
 app = Flask(__name__)
 
 @app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/config')
 def hello_world():
     STATE = {
         'version': 'v4.19.0',

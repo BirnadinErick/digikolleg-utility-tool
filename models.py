@@ -1,6 +1,7 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+import datetime
+
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, desc
+from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import dotenv_values
 
 config = dotenv_values(".env")
@@ -8,6 +9,16 @@ config = dotenv_values(".env")
 engine = create_engine(config['DATABASE_URI'])
 Base = declarative_base()
 SessionLocal = sessionmaker(bind=engine)
+
+
+class OTPRecord(Base):
+    __tablename__ = 'OTPRecord'
+    id = Column(Integer, primary_key=True)
+    code = Column(Integer)
+    timestamp = Column(DateTime, default=datetime.datetime.now())
+    task_id = Column(Integer) # no need for full relationship for now
+
+
 
 class PostRecord(Base):
     __tablename__ = "linkedin_posts"
@@ -20,7 +31,7 @@ class PostRecord(Base):
     goal = Column(Text)
     post = Column(Text)
     instructions = Column(Text)
-    status = Column(String(50), default="queued")  # queued / processing / done / failed
+    status = Column(String(50), default="queued")  # queued / approved / processing / done / failed
 
     def dict(self):
         return {
@@ -39,5 +50,6 @@ class PostRecord(Base):
             'event_title': self.event_title,
         }
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     Base.metadata.create_all(engine)

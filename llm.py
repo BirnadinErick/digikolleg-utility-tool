@@ -63,16 +63,45 @@ Instructions: {instructions}
 Post:
 """
 
+def retrieve_task_data(task_id):
+    session = SessionLocal()
+    print(f"Retrieving task data for task_id: {task_id}")
+    record = session.query(PostRecord).filter_by(id=int(task_id)).first()
+    if (not record) or (record.status != "approved") and (record.status != "queued"):
+        print('req to produce 404 post')
+        session.close()
+        return {}
+
+    record.status = "processing"
+    session.commit()
+
+    return record.dict()
+
+def save_post_to_database(task_id, post):
+    session = SessionLocal()
+
+    record = session.query(PostRecord).filter_by(id=task_id).first()
+    if not record or record.status != "processing":
+        session.close()
+        return False
+
+    if config['ENABLE_LLM_GENERATION'] == 'True':
+        record.post = post
+
+    record.status = "done"
+    session.commit()
+
+    return True
 
 def generate_linkedin_post(task_id, inputs):
     prompt = make_prompt(**inputs)
 
     if config['ENABLE_LLM_GENERATION'] == 'False':
-        print("LLM generation disabled, sleeping for 5s...")
+        print("LLM generation disabled, sleeping for 10s...")
         sleep(10)
-        notify_personal(9) # 9 is for demos
+        save_post_to_database(task_id, None)
+        notify_personal(task_id)
         print("Post saved for task_id: ", task_id)
-        print(f"prompt: {prompt}")
         return
 
     input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(device)
@@ -95,58 +124,30 @@ def generate_linkedin_post(task_id, inputs):
     else:
         print("Post not saved for task_id: ", task_id)
 
-
-def save_post_to_database(task_id, post):
-    session = SessionLocal()
-    record = session.query(PostRecord).filter_by(id=task_id).first()
-    if not record or record.status != "processing":
-        session.close()
-        return False
-
-    record.post = post
-    record.status = "done"
-    session.commit()
-
-    return True
-
-
 llm = Flask(__name__)
 scheduler = BackgroundScheduler()
 scheduler.start()
-
-
-def retrieve_task_data(task_id):
-    session = SessionLocal()
-    record = session.query(PostRecord).filter_by(id=task_id).first()
-    if not record or record.status != "queued":
-        session.close()
-        return False
-
-    record.status = "processing"
-    session.commit()
-
-    return record.dict()
-
 
 @llm.route("/process-new-task", methods=["POST"])
 def generate():
     print(f"Generating Post: {request.json}")
     req_json = request.json
     task_id = req_json["task_id"]
-    data = retrieve_task_data(task_id)
+    data = retrieve_task_data(int(task_id))
+    if data == {}:
+        return jsonify({"ok": False}),404
 
     if config['ENABLE_SCHEDULED_GENERATION'] == 'False':
         print("Scheduled generation not enabled")
         print(f"Recvd {task_id} data: {data}")
         return jsonify({"ok": True})
 
-    result = scheduler.add_job(func=generate_linkedin_post, args=[task_id, data], id=str(task_id),
-                               replace_existing=True)
-    if result.id != task_id:
-        return jsonify({"ok": False})
+    print(f"Recvd {task_id} & data: {data}")
+    scheduler.add_job(func=generate_linkedin_post, args=[task_id, data])
 
     return jsonify({"ok": True})
 
 
 if __name__ == '__main__':
-    llm.run(port=5001)
+    DEBUG = config['ENABLE_DEBUG'] == 'True'
+    llm.run(port=5001, debug=DEBUG)

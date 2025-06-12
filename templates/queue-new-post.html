@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Post Data pregeneration</title>
+</head>
+<body>
+<form action="/queue-new-post" method="post">
+
+    <input type="hidden" name="id" value="{{ task_id }}">
+
+    <label for="event_title">Event Title:</label>
+    <input type="text" id="event_title" name="event_title" value="{{ post.event_title }}"><br>
+
+    <label for="date">Date:</label>
+    <input type="text" id="date" name="date" value="{{ post.date }}"><br>
+
+    <label for="description">Description:</label>
+    <textarea id="description" name="description">{{ post.description }}</textarea><br>
+
+    <label for="good">Good:</label>
+    <textarea id="good" name="good">{{ post.good }}</textarea><br>
+
+    <label for="bad">Bad:</label>
+    <textarea id="bad" name="bad">{{ post.bad }}</textarea><br>
+
+    <label for="goal">Goal:</label>
+    <textarea id="goal" name="goal">{{ post.goal }}</textarea><br>
+
+    <label for="instructions">Instructions:</label>
+    <textarea id="instructions" name="instructions">{{ post.instructions }}</textarea><br>
+
+    <input type="submit" value="Queue">
+</form>
+</body>
+</html>

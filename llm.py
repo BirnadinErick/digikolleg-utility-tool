@@ -8,6 +8,7 @@ from flask import Flask, request, jsonify
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
+from image import prepare_linkedin_image
 from models import SessionLocal, PostRecord
 
 config = dotenv_values(".env")
@@ -127,6 +128,19 @@ def generate_linkedin_post(task_id, inputs):
 llm = Flask(__name__)
 scheduler = BackgroundScheduler()
 scheduler.start()
+
+
+@llm.route('/image-edit')
+def edit_image_demo():
+    prepare_linkedin_image(
+        './static/images/test.jpg',
+        './static/images/test-edit.jpg',
+        'Bauma 2025 Muenchen',
+        'Inecosys GmbH',
+        './fend/jetbrains.ttf',
+        36
+    )
+    return 'Hello'
 
 @llm.route("/process-new-task", methods=["POST"])
 def generate():

@@ -1,17 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Approve a Post request </title>
-</head>
-<body>
-<h2>Enter OTP you/Marketing Admin received via email:</h2>
-<form action="/approve/{{ task_id }}" method="post">
-    <label for="otp">OTP:</label><input type="number" name="otp" id="otp">
-    <input type="submit" value="Verify">
-    <a href="/init-approve/{{ task_id }}">
-        Resend OTP
-    </a>
-</form>
-</body>
-</html>
+{% extends "layout.html" %}
+{% block title %}
+    Approve the Post Request
+{% endblock %}
+
+{% block page_title %} Approve the Post Request {% endblock %}
+
+{% block content %}
+    <div class="mt-12 mb-32 flex justify-center items-center">
+        <div>
+
+            <ul class="steps mb-24">
+                <li class="step step-neutral">
+                    <span class="step-icon">🛡️</span>
+                    Authenticate
+                </li>
+                <li class="step">
+                    <span class="step-icon">✍️</span>
+                    Edit
+                </li>
+                <li class="step">
+                    <span class="step-icon">🍻</span>
+                    Done
+                </li>
+            </ul>
+
+            <p class="max-w-72 mb-8">
+                You (or an authorized person) should have received an email with OTP Code. Please enter the code
+                to proceed.
+            </p>
+
+            <form action="/approve/{{ task_id }}" method="post">
+                <label class="input">
+                    <span class="label">OTP</span>
+                    <input type="number" name="otp" id="otp" placeholder="z.B. 1905003" required autofocus>
+                </label>
+                <br>
+
+                <div class="flex justify-start items-center space-x-4 my-4">
+                    <a class="btn bg-amber-500 text-black" href="/init-approve/{{ task_id }}">
+                        Resend OTP
+                    </a>
+                    <input class="btn" type="submit" value="Verify">
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -146,7 +146,7 @@ def request_new_post_init():
 
 @app.route('/mockup')
 def mockup():
-    return render_template('request-notification.html')
+    return render_template('queue-new-post.html', post={})
 
 @app.route("/init-approve/<int:task_id>")
 def init_approve(task_id):

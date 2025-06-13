@@ -1,36 +1,97 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Post Data pregeneration</title>
-</head>
-<body>
-<form action="/queue-new-post" method="post">
+{% extends "layout.html" %}
+{% block title %}
+    Approve New Post
+{% endblock %}
 
-    <input type="hidden" name="id" value="{{ task_id }}">
+{% block page_title %} Approve the Post Request {% endblock %}
 
-    <label for="event_title">Event Title:</label>
-    <input type="text" id="event_title" name="event_title" value="{{ post.event_title }}"><br>
+{% block content %}
+    <div class="w-full mt-12 mb-8 flex justify-center items-center">
+        <ul class="steps mb-24">
+            <li class="step step-neutral">
+                <span class="step-icon">🛡️</span>
+                Authenticate
+            </li>
+            <li class="step step-neutral">
+                <span class="step-icon">✍️</span>
+                Edit
+            </li>
+            <li class="step">
+                <span class="step-icon">🍻</span>
+                Done
+            </li>
+        </ul>
+    </div>
 
-    <label for="date">Date:</label>
-    <input type="text" id="date" name="date" value="{{ post.date }}"><br>
+    <div class="w-full lg:px-36">
+        <p class="mb-8">
+            Please Edit any information before queueing it for generation. You can add further instructions at the
+            bottom
+            to fine-tune the output.
+        </p>
 
-    <label for="description">Description:</label>
-    <textarea id="description" name="description">{{ post.description }}</textarea><br>
+        <form class="my-4" action="/queue-new-post" method="post">
 
-    <label for="good">Good:</label>
-    <textarea id="good" name="good">{{ post.good }}</textarea><br>
+            <label class="input my-4">
+                <span class="label">Post Title</span>
+                <input type="text" id="event_title" name="event_title" value="{{ post.event_title }}"
+                       required autofocus>
+            </label>
 
-    <label for="bad">Bad:</label>
-    <textarea id="bad" name="bad">{{ post.bad }}</textarea><br>
+            <br>
 
-    <label for="goal">Goal:</label>
-    <textarea id="goal" name="goal">{{ post.goal }}</textarea><br>
+            <label class="input my-4">
+                <span class="label">Corresponding Date</span>
+                <input type="date" id="date" name="date" value="{{ post.date }}">
+            </label>
+            <br>
 
-    <label for="instructions">Instructions:</label>
-    <textarea id="instructions" name="instructions">{{ post.instructions }}</textarea><br>
+            <label class="floating-label my-4">
+                <span>Description</span>
+                <textarea class="bg-white text-black p-2" id="description" name="description" rows="10"
+                          cols="100">
+                {{ post.description }}
+            </textarea>
+            </label>
+            <br>
 
-    <input type="submit" value="Queue">
-</form>
-</body>
-</html>
+            <label class="floating-label my-4">
+                <span>Positive Impressions</span>
+                <textarea class="bg-white text-black p-2" id="good" name="good" rows="10" cols="100">
+                {{ post.good }}
+            </textarea><br>
+            </label>
+            <br>
+
+            <label class="floating-label my-4">
+                <span>Negative Impressions</span>
+                <textarea class="bg-white text-black p-2" id="bad" name="bad" rows="10" cols="100">
+                {{ post.bad }}
+            </textarea><br>
+            </label>
+            <br>
+
+            <label class="floating-label my-4">
+                <span>Goal for Participation</span>
+                <textarea class="bg-white text-black p-2" id="goal" name="goal" rows="10" cols="100">
+                {{ post.goal }}
+            </textarea><br>
+            </label>
+            <br>
+
+            <label class="floating-label my-4">
+                <span>Additional Instructions</span>
+                <textarea class="bg-white text-black p-2" id="instructions" name="instructions" rows="10"
+                          cols="100">
+                {{ post.instructions }}
+            </textarea><br>
+            </label>
+            <br>
+
+            <div class="flex justify-start items-center space-x-4">
+                <input class="btn bg-amber-500 text-black" type="reset" value="Clear All Values">
+                <input class="btn" type="submit" value="Queue">
+            </div>
+        </form>
+    </div>
+{% endblock %}

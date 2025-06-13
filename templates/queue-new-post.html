@@ -32,6 +32,8 @@
 
         <form class="my-4" action="/queue-new-post" method="post">
 
+            <input type="hidden" name="id" id="id" value="{{ task_id }}">
+
             <label class="input my-4">
                 <span class="label">Post Title</span>
                 <input type="text" id="event_title" name="event_title" value="{{ post.event_title }}"

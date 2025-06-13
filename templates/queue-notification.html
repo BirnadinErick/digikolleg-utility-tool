@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}
+    Request New Post
+{% endblock %}
+
+{% block page_title %} Request a New Post{% endblock %}
+
+{% block hero %}
+    <div
+            class="hero min-h-screen"
+            style="background-image: url(https://unsplash.com/photos/d2w-_1LJioQ/download?ixid=M3wxMjA3fDB8MXxhbGx8fHx8fHx8fHwxNzQ5NzQyOTQyfA&force=true&w=1920);"
+    >
+        <div class="hero-overlay"></div>
+        <div class="hero-content text-neutral-content text-center">
+            <div class="max-w-md">
+                <h1 class="mb-5 text-5xl font-bold">{{ title }}</h1>
+                <p class="mb-5">
+                    {{ msg }}
+                </p>
+                <a href="/posts" class="btn btn-primary"> View all posts (not secured in demo versions) </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

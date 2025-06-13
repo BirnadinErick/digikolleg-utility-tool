@@ -11,6 +11,7 @@ from models import SessionLocal, PostRecord, OTPRecord
 
 config = dotenv_values('.env')
 
+
 def generate_otp():
     totp = pyotp.TOTP(config['OTP_PRIVATE_KEY'])
     return int(totp.now())
@@ -39,11 +40,8 @@ def retrieve_post(task_id, full=False):
     return record.dict() if full else record.get_post()
 
 
-
-
 def get_config_state(flag):
     return 'ENABLED' if flag == 'True' else 'DISABLED'
-
 
 
 # noinspection PyBroadException
@@ -80,6 +78,7 @@ def send_mail(content, subject, to_addr, from_addr):
     else:
         return True
 
+
 def request_new_post(task_id):
     content = "New Post has been requested. Please approve to queue the post to Generation-Service"
     content += f"Click here to proceed: {config['APP_SERVICE'] + "/init-approve/" + str(task_id)}"
@@ -88,11 +87,15 @@ def request_new_post(task_id):
     from_addr = config['EMAIL_USER']
 
     return send_mail(content, subject, to_addr, from_addr)
+
+
 app = Flask(__name__)
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/config')
 def hello_world():
@@ -112,6 +115,7 @@ def hello_world():
 @app.route('/new-post')
 def init_new_post():
     return render_template('new-post.html')
+
 
 @app.route("/request-new-post", methods=["POST"])
 def request_new_post_init():
@@ -139,14 +143,18 @@ def request_new_post_init():
 
     ok = request_new_post(int(task_id))
     if not ok:
-        return render_template('request-notification.html', title="Oopsie!", msg="Something went wrong. We will look into it.")
+        return render_template('request-notification.html', title="Oopsie!",
+                               msg="Something went wrong. We will look into it.")
 
     print(f"Requested new post: {task_id}")
-    return render_template('request-notification.html', msg="Your request has been notified to Marketing team.", title="Danke!")
+    return render_template('request-notification.html', msg="Your request has been notified to Marketing team.",
+                           title="Danke!")
 
-@app.route('/mockup')
-def mockup():
-    return render_template('queue-new-post.html', post={})
+
+# @app.route('/mockup')
+# def mockup():
+#     return render_template('', post={})
+
 
 @app.route("/init-approve/<int:task_id>")
 def init_approve(task_id):
@@ -184,6 +192,7 @@ def approve(task_id):
     post = retrieve_post(task_id, full=True)
     return render_template('queue-new-post.html', post=post, task_id=task_id)
 
+
 @app.route("/queue-new-post", methods=['POST'])
 def new_post():
     form = request.form
@@ -210,10 +219,12 @@ def new_post():
 
     ok = queue_new_post(task_id)
     if not ok:
-        return 'Something went wrong'
+        return render_template('queue-notification.html', title="Oopsie!", msg="Something went wrong.")
 
     print(f"Approved new post: {task_id}")
-    return 'Queued. You will be notified once generation is completed.'
+    return render_template('queue-notification.html', title="Moment!",
+                           msg="The post is in the queue. You will receive a notification via email.")
+
 
 @app.route("/webhook/update-post-status", methods=['POST'])
 def update_post_status():
@@ -240,12 +251,14 @@ def update_post_status():
                    )
     return jsonify({"status": "success"}) if ok else jsonify({"status": "failed"})
 
+
 @app.route('/posts', methods=['GET'])
 def get_posts():
     session = SessionLocal()
     posts = session.query(PostRecord).all()
 
     return render_template('posts.html', posts=posts)
+
 
 if __name__ == '__main__':
     DEBUG = config['ENABLE_DEBUG'] == 'True'

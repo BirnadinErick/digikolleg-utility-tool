@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}
+    Prepare Images
+{% endblock %}
+
+{% block page_title %} Prepare images for Social Media Upload{% endblock %}
+
+{% block content %}
+    <div class="mt-12 mb-32 flex justify-center items-center">
+        <div>
+            <p class="max-w-72 mb-8">
+                Select images you would like to process.
+            </p>
+
+            <form action="/prep-images" method="post" enctype="multipart/form-data">
+                <label class="input mb-8">
+                    <span class="label">Image Caption</span>
+                    <input type="text" name="caption" id="caption" autofocus required>
+                </label>
+                <br>
+
+                <input name="file" id="file" type="file" class="file-input" accept="image/*" multiple required/>
+                <br>
+
+                <div class="flex justify-start items-center space-x-4 my-4">
+                    <input class="btn bg-amber-500 text-black" type="reset" value="Clear Selection">
+                    <input class="btn" type="submit" value="Prepare">
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

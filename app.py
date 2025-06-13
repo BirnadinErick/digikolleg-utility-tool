@@ -1,15 +1,23 @@
+import os
 from email.message import EmailMessage
 from smtplib import SMTP, SMTPException
 
 import pyotp
 import requests
 from dotenv import dotenv_values
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, flash, url_for, redirect, send_from_directory
 from sqlalchemy import desc
+from werkzeug.utils import secure_filename
 
+from image import prepare_linkedin_image
 from models import SessionLocal, PostRecord, OTPRecord
 
 config = dotenv_values('.env')
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in config['ALLOWED_EXTENSIONS'].split(',')
 
 
 def generate_otp():
@@ -90,6 +98,7 @@ def request_new_post(task_id):
 
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = config['UPLOAD_FOLDER']
 
 
 @app.route('/')
@@ -258,6 +267,41 @@ def get_posts():
     posts = session.query(PostRecord).all()
 
     return render_template('posts.html', posts=posts)
+
+
+@app.route('/prep-images', methods=['GET', 'POST'])
+def prep_images():
+    if request.method == 'GET':
+        return render_template('prep-images.html')
+
+    if 'file' not in request.files:
+        print("no file in request")
+        print(f"req: {request.files}")
+        return render_template('prep-images.html')
+
+    file = request.files['file']
+    if file.filename == '':
+        print("no file in request - empty file")
+        return render_template('prep-images.html')
+
+    if file and allowed_file(file.filename):
+        filenames = secure_filename(file.filename).split('.')
+        filename, ext = filenames[0], filenames[1]
+
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename + "." + ext)
+        edit_filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename + "-prep." + ext)
+        print(f"filename: {filepath}\n edit filepath: {edit_filepath}")
+
+        file.save(filepath)
+        prepare_linkedin_image(filepath, edit_filepath, request.form['caption'])
+        return redirect(url_for('viewfile', name=filename + "-prep." + ext))
+
+    return 'Something went wrong.'
+
+
+@app.route('/viewfile/<name>')
+def viewfile(name):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], name)
 
 
 if __name__ == '__main__':

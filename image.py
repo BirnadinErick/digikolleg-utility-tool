@@ -4,8 +4,8 @@ def prepare_linkedin_image(
         image_path,
         output_path,
         center_text,
-        right_text="YourBrand",
-        font_path="arial.ttf",
+        right_text="Inecosys GmbH",
+        font_path="./fend/jetbrains.ttf",
         font_size=36
 ):
     img = Image.open(image_path).convert("RGB")

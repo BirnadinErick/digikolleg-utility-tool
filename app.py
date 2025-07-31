@@ -8,17 +8,18 @@ from dotenv import dotenv_values
 from flask import Flask, request, jsonify, render_template, flash, url_for, redirect, send_from_directory
 from sqlalchemy import desc
 from werkzeug.utils import secure_filename
+from flask_cors import CORS
 
 from image import prepare_linkedin_image
 from models import SessionLocal, PostRecord, OTPRecord
+from posts_db import create_post, get_all_posts, get_post, update_post, delete_post
+from logger import logger
 
 config = dotenv_values('.env')
-
 
 def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.', 1)[1].lower() in config['ALLOWED_EXTENSIONS'].split(',')
-
 
 def generate_otp():
     totp = pyotp.TOTP(config['OTP_PRIVATE_KEY'])
@@ -98,6 +99,7 @@ def request_new_post(task_id):
 
 
 app = Flask(__name__)
+CORS(app,supports_credentials=True, resources={r"/api/*": {"origins": "http://localhost:3001"}})
 app.config['UPLOAD_FOLDER'] = config['UPLOAD_FOLDER']
 
 
@@ -262,7 +264,7 @@ def update_post_status():
 
 
 @app.route('/posts', methods=['GET'])
-def get_posts():
+def old_get_posts():
     session = SessionLocal()
     posts = session.query(PostRecord).all()
 
@@ -303,6 +305,21 @@ def prep_images():
 def viewfile(name):
     return send_from_directory(app.config['UPLOAD_FOLDER'], name)
 
+# ======================== CHANGE TO NEW ARCHITECTURE: API+SPA ====================================
+@app.route('/api/posts', methods=['POST'])
+def api_create_post():
+    logger.info('CREATE POST')
+    return create_post(request)
+
+@app.route('/api/posts', methods=['GET'])
+def api_read_all_posts():
+    logger.info('READ POSTS(ALL)')
+    return get_all_posts()
+
+@app.route('/api/posts/<int:id>', methods=['GET'])
+def api_get_post(id):
+    logger.info(f"READ POSTS({id})")
+    return get_post(id)
 
 if __name__ == '__main__':
     DEBUG = config['ENABLE_DEBUG'] == 'True'
